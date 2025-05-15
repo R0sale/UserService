@@ -1,6 +1,8 @@
-﻿namespace Service
+﻿using Contracts;
+
+namespace Service
 {
-    public class UserService
+    public class UserService : IUserService
     {
 
     }
