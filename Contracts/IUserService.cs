@@ -12,10 +12,10 @@ namespace Contracts
     {
         Task<IEnumerable<UserDTO>> GetAllUsersAsync(bool trackChanges);
         Task<UserDTO> GetUserAsync(Guid id, bool trackChanges);
-        Task<UserDTO> CreateUser(ProductForCreationDTO productForCreation);
+        Task<UserDTO> CreateUser(UserForCreationDTO userForCreation);
         Task DeleteUser(Guid id, bool trackChanges);
-        Task UpdateUser(Guid id, UserForUpdateDTO productForUpd, bool trackChanges);
-        Task<(UserForUpdateDTO productForUpd, User productEntity)> GetProductForPatialUpdate(Guid id, bool trackChanges);
-        Task SaveChangesForPatrialUpdate(UserForUpdateDTO productForUpd, User product);
+        Task UpdateUser(Guid id, UserForUpdateDTO userForUpd, bool trackChanges);
+        Task<(UserForUpdateDTO userForUpd, User userEntity)> GetUserForPatialUpdate(Guid id, bool trackChanges);
+        Task SaveChangesForPatrialUpdate(UserForUpdateDTO userForUpd, User user);
     }
 }
