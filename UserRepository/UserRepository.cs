@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace UserRepository
 {
-    class UserRepository : RepositoryBase, IUserRepository
+    public class UserRepository : RepositoryBase, IUserRepository
     {
         public UserRepository(UserRepositoryContext context) : base(context)
         { }
