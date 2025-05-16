@@ -1,6 +1,8 @@
 ﻿using UserRepository;
 using Microsoft.EntityFrameworkCore;
 using Contracts;
+using Microsoft.AspNetCore.Identity;
+using Entities.Models;
 
 namespace UserService.Extensions
 {
@@ -23,6 +25,21 @@ namespace UserService.Extensions
                 opt.UseSqlServer(configuration.GetConnectionString("sqlConnection"),
                     b => b.MigrationsAssembly("UserService"));
             });
+        }
+
+        public static void ConfigureIdentity(this IServiceCollection services)
+        {
+            var builder = services.AddIdentity<User, IdentityRole>(opts =>
+            {
+                opts.Password.RequireDigit = true;
+                opts.Password.RequireLowercase = true;
+                opts.Password.RequireUppercase = true;
+                opts.Password.RequireNonAlphanumeric = false;
+                opts.Password.RequiredLength = 8;
+                opts.User.RequireUniqueEmail = true;
+            })
+            .AddEntityFrameworkStores<UserRepositoryContext>()
+            .AddDefaultTokenProviders();
         }
     }
 }

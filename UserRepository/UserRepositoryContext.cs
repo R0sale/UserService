@@ -1,4 +1,5 @@
 ﻿using Entities.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -8,11 +9,16 @@ using System.Threading.Tasks;
 
 namespace UserRepository
 {
-    public class UserRepositoryContext : DbContext
+    public class UserRepositoryContext : IdentityDbContext<User>
     {
         public UserRepositoryContext(DbContextOptions opts) : base(opts)
         { }
 
-        public DbSet<User> Users { get; set; }
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+
+        }
     }
 }
