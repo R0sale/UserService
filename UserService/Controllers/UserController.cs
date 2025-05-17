@@ -2,12 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Shared.DTOObjects;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Authorization;
+using UserService.ActionFilters;
 
 namespace UserService.Controllers
 {
     [ApiController]
     [Route("api/users")]
-    public class UserController : Controller
+    public class UserController : ControllerBase
     {
         private readonly IServiceManager _service;
         public UserController(IServiceManager service)
@@ -15,57 +17,55 @@ namespace UserService.Controllers
             _service = service;
         }
 
+
         [HttpGet]
         public async Task<IActionResult> GetAllUsers()
         {
-            var users = await _service.UserService.GetAllUsersAsync(false);
+            var users = await _service.UserService.GetAllUsersAsync();
 
             return Ok(users);
         }
 
+
         [HttpGet("{id:guid}", Name = "UserById")]
-        public async Task<IActionResult> GetAllUsers(Guid id)
+        public async Task<IActionResult> GetUser(Guid id)
         {
-            var user = await _service.UserService.GetUserAsync(id ,false);
+            var user = await _service.UserService.GetUserAsync(id);
 
             return Ok(user);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateUser([FromBody] UserForCreationDTO userForCreation)
-        {
-            var user = await _service.UserService.CreateUser(userForCreation);
 
-            return CreatedAtRoute("UserById", new {id = user.Id}, user);
-        }
-
-        [HttpDelete("id:guid")]
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteUser(Guid id)
         {
-            await _service.UserService.DeleteUser(id, false);
+            await _service.UserService.DeleteUser(id);
 
             return NoContent();
         }
 
 
         [HttpPut("{id:guid}")]
+        [ServiceFilter(typeof(ValidationFilter))]
         public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UserForUpdateDTO userForUpdate)
         {
-            await _service.UserService.UpdateUser(id, userForUpdate, true);
+            await _service.UserService.UpdateUser(id, userForUpdate);
 
             return NoContent();
         }
+
 
         [HttpPatch("{id:guid}")]
         public async Task<IActionResult> PartiallyUpdateProduct(Guid id, [FromBody] JsonPatchDocument<UserForUpdateDTO> patchDoc)
         {
             if (patchDoc == null)
-                return BadRequest();
+                return BadRequest("The patchDoc is null.");
 
-            var result = await _service.UserService.GetUserForPatialUpdate(id, true);
+            var result = await _service.UserService.GetUserForPatialUpdate(id);
             patchDoc.ApplyTo(result.userForUpd);
 
-            await _service.UserService.SaveChangesForPatrialUpdate(result.userForUpd, result.userEntity);
+            await _service.UserService.PartiallyUpdateUser(result.userEntity, result.userForUpd);
+
             return NoContent();
         }
     }

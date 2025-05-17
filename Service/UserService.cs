@@ -17,70 +17,65 @@ namespace Service
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<UserDTO>> GetAllUsersAsync(bool trackChanges)
+        public async Task<IEnumerable<UserDTO>> GetAllUsersAsync()
         {
-            var users = await _repository.GetAllUsers(trackChanges);
+            var users = (await _repository.GetAllUsers()).ToList();
 
-            var usersDTO = _mapper.Map<IEnumerable<UserDTO>>(users);
+            var usersDTO = _mapper.Map<IEnumerable<UserDTO>>(users).ToList();
+
+            for (int i = 0; i < users.Count; i++)
+            {
+                usersDTO[i].Roles = (ICollection<string>)await _repository.GetRoles(users[i]);
+            }
 
             return usersDTO;
         }
 
-        public async Task<UserDTO> GetUserAsync(Guid id, bool trackChanges)
+        public async Task<UserDTO> GetUserAsync(Guid id)
         {
-            var user = await FindAndCheckIfExistsUser(id, trackChanges);
+            var user = await FindAndCheckIfExistsUser(id);
 
             var userDTO = _mapper.Map<UserDTO>(user);
+
+            userDTO.Roles = (ICollection<string>)await _repository.GetRoles(user);
 
             return userDTO;
         }
 
-        public async Task<UserDTO> CreateUser(UserForCreationDTO userForCreation)
+        public async Task DeleteUser(Guid id)
         {
-            var user = _mapper.Map<User>(userForCreation);
-
-            _repository.CreateUser(user);
-            await _repository.SaveAsync();
-
-            var userDTO = _mapper.Map<UserDTO>(user);
-
-            return userDTO;
-        }
-
-        public async Task DeleteUser(Guid id, bool trackChanges)
-        {
-            var product = await FindAndCheckIfExistsUser(id, trackChanges);
+            var product = await FindAndCheckIfExistsUser(id);
 
             _repository.DeleteUser(product);
-            await _repository.SaveAsync();
         }
 
-        public async Task UpdateUser(Guid id, UserForUpdateDTO userForUpd, bool trackChanges)
+        public async Task UpdateUser(Guid id, UserForUpdateDTO userForUpd)
         {
-            var user = await FindAndCheckIfExistsUser(id, trackChanges);
+            var user = await FindAndCheckIfExistsUser(id);
 
             _mapper.Map(userForUpd, user);
-            await _repository.SaveAsync();
+            await _repository.UpdateUser(user, userForUpd);
         }
 
-        public async Task<(UserForUpdateDTO userForUpd, User userEntity)> GetUserForPatialUpdate(Guid id, bool trackChanges)
+        public async Task<(UserForUpdateDTO userForUpd, User userEntity)> GetUserForPatialUpdate(Guid id)
         {
-            var user = await FindAndCheckIfExistsUser(id, trackChanges);
+            var user = await FindAndCheckIfExistsUser(id);
 
             var userForUpd = _mapper.Map<UserForUpdateDTO>(user);
 
             return (userForUpd, user);
         }
 
-        public async Task SaveChangesForPatrialUpdate(UserForUpdateDTO userForUpd, User user)
+        public async Task PartiallyUpdateUser(User user, UserForUpdateDTO userForUpd)
         {
             _mapper.Map(userForUpd, user);
-            await _repository.SaveAsync();
+
+            await _repository.PartiallyUpdateUser(user, userForUpd);
         }
 
-        private async Task<User> FindAndCheckIfExistsUser(Guid id, bool trackChanges)
+        private async Task<User> FindAndCheckIfExistsUser(Guid id)
         {
-            var user = await _repository.GetUser(id, trackChanges);
+            var user = await _repository.GetUser(id);
 
             return user;
         }
