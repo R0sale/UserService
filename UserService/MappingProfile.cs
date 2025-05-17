@@ -10,7 +10,8 @@ namespace UserService
         {
             CreateMap<User, UserDTO>();
             CreateMap<UserDTO, User>();
-            CreateMap<ProductForUpdateDTO, User>().ReverseMap();
+            CreateMap<UserForUpdateDTO, User>().ReverseMap();
+            CreateMap<UserForRegistrationDTO, User>();
         }
     }
 }

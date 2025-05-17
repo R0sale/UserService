@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UserRepository.Configurations;
 
 namespace UserRepository
 {
@@ -18,7 +19,7 @@ namespace UserRepository
         {
             base.OnModelCreating(builder);
 
-
+            builder.ApplyConfiguration(new RoleConfiguration());
         }
     }
 }

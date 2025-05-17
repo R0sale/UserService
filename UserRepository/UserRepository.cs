@@ -5,36 +5,68 @@ using System.Text;
 using System.Threading.Tasks;
 using Contracts;
 using Entities.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Shared.DTOObjects;
 
 namespace UserRepository
 {
-    public class UserRepository : RepositoryBase, IUserRepository
+    public class UserRepository : IUserRepository
     {
-        public UserRepository(UserRepositoryContext context) : base(context)
-        { }
+        private readonly UserManager<User> _userManager;
 
-        public async Task<IEnumerable<User>> GetAllUsers(bool trackChanges)
+        public UserRepository(UserManager<User> userManager)
         {
-            return await FindAll(trackChanges)
+            _userManager = userManager;
+        }
+
+        public async Task<IEnumerable<User>> GetAllUsers()
+        {
+            var users = await _userManager.Users
                 .OrderBy(u => u.FirstName)
                 .ToListAsync();
+
+            return users;
         }
 
-        public async Task<User> GetUser(Guid id, bool trackChanges)
+        public async Task<IEnumerable<string>> GetRoles(User user)
         {
-            return await FindByCondition(u => u.Id.Equals(id), trackChanges)
-                .SingleOrDefaultAsync();
+            return await _userManager.GetRolesAsync(user);
         }
 
-        public void CreateUser(User user)
+        public async Task<User> GetUser(Guid id)
         {
-            CreateUser(user);
+            var user = await _userManager.FindByIdAsync(id.ToString());
+
+            return user;
         }
 
-        public void DeleteUser(User user)
+        public async Task DeleteUser(User user)
         {
-            DeleteUser(user);
+            await _userManager.DeleteAsync(user);
+        }
+
+        public async Task UpdateUser(User user, UserForUpdateDTO userForUpd)
+        {
+            await _userManager.UpdateAsync(user);
+
+            await _userManager.RemoveFromRolesAsync(user, await GetRoles(user));
+
+            await _userManager.AddToRolesAsync(user, userForUpd.Roles);
+        }
+
+        public async Task PartiallyUpdateUser(User user, UserForUpdateDTO userForUpd)
+        {
+            await _userManager.UpdateAsync(user);
+
+            var roles = userForUpd.Roles;
+
+            if (roles != null)
+            {
+                await _userManager.RemoveFromRolesAsync(user, await GetRoles(user));
+                await _userManager.AddToRolesAsync(user, roles);
+            }
+                
         }
     }
 }

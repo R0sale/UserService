@@ -1,4 +1,5 @@
 ﻿using Entities.Models;
+using Shared.DTOObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,10 +10,11 @@ namespace Contracts
 {
     public interface IUserRepository
     {
-        Task<IEnumerable<User>> GetAllUsers(bool trackChanges);
-        Task<User> GetUser(Guid id, bool trackChanges);
-        void CreateUser(User user);
-        void DeleteUser(User user);
-        Task SaveAsync();
+        Task<IEnumerable<User>> GetAllUsers();
+        Task<User> GetUser(Guid id);
+        Task DeleteUser(User user);
+        Task UpdateUser(User user, UserForUpdateDTO userForUpd);
+        Task<IEnumerable<string>> GetRoles(User user);
+        public Task PartiallyUpdateUser(User user, UserForUpdateDTO userForUpd);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Entities.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -9,27 +10,23 @@ using System.Threading.Tasks;
 
 namespace UserRepository.Configurations
 {
-    public class UserContextConfiguration : IEntityTypeConfiguration<User>
+    public class RoleConfiguration : IEntityTypeConfiguration<IdentityRole>
     {
-        public void Configure(EntityTypeBuilder<User> builder)
+        public void Configure(EntityTypeBuilder<IdentityRole> builder)
         {
             builder.HasData
             (
-                new User 
+                new IdentityRole 
                 { 
-                
+                    Id = "409e52ba-c288-463b-a6f1-5b1c0f17e17a",
+                    Name = "User",
+                    NormalizedName = "USER"
                 },
-                new User
+                new IdentityRole
                 {
-
-                },
-                new User
-                {
-
-                },
-                new User
-                {
-
+                    Id = "bb32d8a3-7c76-4df5-9d1c-aba247879311",
+                    Name = "Admin",
+                    NormalizedName = "ADMIN"
                 }
             );
         }
