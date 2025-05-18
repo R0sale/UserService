@@ -38,7 +38,7 @@ namespace UserService.Controllers
             if (!await _service.AuthenticationService.ValidateUser(userForAuth))
                 return Unauthorized();
 
-            return Ok(new
+            return Ok(new TokenResponse
             {
                 Token = await _service.AuthenticationService.CreateToken()
             });
