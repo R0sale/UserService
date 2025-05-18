@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using Contracts;
 using Entities.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -16,10 +18,10 @@ namespace Service
         private readonly Lazy<IUserService> _userService;
         private readonly Lazy<IAuthenticationService> _authenticationService;
 
-        public ServiceManager(IUserRepository userRepository, IMapper mapper, UserManager<User> userManager, IConfiguration configuration, RoleManager<IdentityRole> roleManager)
+        public ServiceManager(IUserRepository userRepository, IMapper mapper, UserManager<User> userManager, IConfiguration configuration, RoleManager<IdentityRole> roleManager, IEmailService emailService)
         {
             _userService = new Lazy<IUserService>(() => new UserService(userRepository, mapper));
-            _authenticationService = new Lazy<IAuthenticationService>(() => new AuthenticationService(mapper, userManager, configuration, roleManager));
+            _authenticationService = new Lazy<IAuthenticationService>(() => new AuthenticationService(mapper, userManager, configuration, roleManager, emailService));
         }
 
         public IUserService UserService => _userService.Value;

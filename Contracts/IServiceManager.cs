@@ -8,7 +8,7 @@ namespace Contracts
 {
     public interface IServiceManager
     {
-        public IUserService UserService { get; }
+        IUserService UserService { get; }
         IAuthenticationService AuthenticationService { get; }
     }
 }

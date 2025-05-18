@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
+using MailKit;
 
 namespace Service
 {
@@ -21,15 +22,17 @@ namespace Service
         private readonly UserManager<User> _userManager;
         private readonly IConfiguration _configuration;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IEmailService _emailService;
 
         private User? _user;
 
-        public AuthenticationService(IMapper mapper, UserManager<User> userManager, IConfiguration configuration, RoleManager<IdentityRole> roleManager)
+        public AuthenticationService(IMapper mapper, UserManager<User> userManager, IConfiguration configuration, RoleManager<IdentityRole> roleManager, IEmailService emailService)
         {
             _mapper = mapper;
             _userManager = userManager;
             _configuration = configuration;
             _roleManager = roleManager;
+            _emailService = emailService;
         }
 
         public async Task<IdentityResult> RegisterUser(UserForRegistrationDTO userForRegistration)
@@ -49,6 +52,12 @@ namespace Service
             if (result.Succeeded && rolesExist)
             {
                 await _userManager.AddToRolesAsync(user, userForRegistration.Roles);
+
+                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+                var callBackUri = _emailService.GenerateLink(user.Id, code);
+
+                await _emailService.SendEmailAsync(user.Email, "Confirm your email", $"To confirm your email follow the link <a href=\"{callBackUri}\">link</a>");
             }
 
             return result;
@@ -70,6 +79,18 @@ namespace Service
             var tokenOptions = GenerateTokenOptions(signingCredentials, claims);
 
             return new JwtSecurityTokenHandler().WriteToken(tokenOptions);
+        }
+
+        public async Task<IdentityResult> ConfirmEmailAsync(User user, string code)
+        {
+            return await _userManager.ConfirmEmailAsync(user, code);
+        }
+
+        public async Task<User> GetUserToConfirmEmail(Guid id)
+        {
+            var user = await _userManager.FindByIdAsync(id.ToString());
+
+            return user;
         }
 
         private SigningCredentials GetSigningCredentials()

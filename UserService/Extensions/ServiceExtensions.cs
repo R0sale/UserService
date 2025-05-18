@@ -79,5 +79,11 @@ namespace UserService.Extensions
         }
 
         public static void ConfigureValidationFilter(this IServiceCollection services) => services.AddScoped<ValidationFilter>();
+
+        public static void ConfigureEmailService(this IServiceCollection services)
+        {
+            services.AddScoped<IEmailService, EmailService>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+        }
     }
 }
