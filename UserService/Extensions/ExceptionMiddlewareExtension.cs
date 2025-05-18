@@ -1,5 +1,6 @@
 ﻿using Entities.ErrorModel;
 using Microsoft.AspNetCore.Diagnostics;
+using Entities.Exceptions;
 
 namespace UserService.Extensions
 {
@@ -18,6 +19,9 @@ namespace UserService.Extensions
                     {
                         context.Response.StatusCode = contextFeature switch
                         {
+                            BadRequestException => StatusCodes.Status400BadRequest,
+                            ForbiddenException => StatusCodes.Status403Forbidden,
+                            NotFoundException => StatusCodes.Status404NotFound,
                             _ => StatusCodes.Status500InternalServerError
                         };
 

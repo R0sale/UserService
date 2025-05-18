@@ -34,6 +34,7 @@ namespace UserService.Controllers
         }
 
         [HttpPost("login")]
+        [ServiceFilter(typeof(ValidationFilter))]
         public async Task<IActionResult> Authenticate([FromBody] UserForAuthenticationDTO userForAuth)
         {
             if (!await _service.AuthenticationService.ValidateUser(userForAuth))
@@ -45,27 +46,37 @@ namespace UserService.Controllers
             });
         }
 
-        [HttpGet]
+        [HttpGet("confirmEmail")]
         [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail(string userId, string code)
         {
-            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
-                return BadRequest();
-
-            if (!Guid.TryParse(userId, out var id))
-                return BadRequest("Id isn't in appropriate format");
-
-            var user = await _service.AuthenticationService.GetUserToConfirmEmail(id);
-
-            if (user == null)
-                return NotFound("User not found.");
-
-            var result = await _service.AuthenticationService.ConfirmEmailAsync(user, code);
+            var result = await _service.AuthenticationService.ConfirmEmailAsync(userId, code);
 
             if (result.Succeeded)
                 return Ok("Email confirmed.");
             else
                 return Content("Couldn't confirm email.");
+        }
+
+        [HttpPost("restorePassword")]
+        [ServiceFilter(typeof(ValidationFilter))]
+        public async Task<IActionResult> RestorePassword([FromBody] RestorePasswordUserDTO restoreUser)
+        {
+            await _service.AuthenticationService.RestorePassword(restoreUser);
+
+            return Content("To change your password check the email and follow the link.");
+        }
+
+        [HttpGet("changePassword")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ChangePassword(string userId, string code, string newPassword)
+        {
+            var result = await _service.AuthenticationService.ConfirmPasswordAsync(userId, code, newPassword);
+
+            if (result.Succeeded)
+                return Ok("Password changed.");
+            else
+                return Content("Couldn't change your password.");
         }
     }
 }

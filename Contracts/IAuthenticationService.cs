@@ -14,7 +14,8 @@ namespace Contracts
         Task<IdentityResult> RegisterUser(UserForRegistrationDTO userForRegistration);
         Task<bool> ValidateUser(UserForAuthenticationDTO userForAuth);
         Task<string> CreateToken();
-        Task<IdentityResult> ConfirmEmailAsync(User user, string code);
-        Task<User> GetUserToConfirmEmail(Guid id);
+        Task<IdentityResult> ConfirmEmailAsync(string userId, string code);
+        Task RestorePassword(RestorePasswordUserDTO restoreUser);
+        Task<IdentityResult> ConfirmPasswordAsync(string userId, string code, string newPassword);
     }
 }

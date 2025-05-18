@@ -8,7 +8,8 @@ namespace Contracts
 {
     public interface IEmailService
     {
-        string GenerateLink(string userId, string code);
+        string GenerateEmailLink(string userId, string code);
         Task SendEmailAsync(string email, string subject, string message);
+        string GenerateRestoreLink(string userId, string code, string newPassword);
     }
 }
