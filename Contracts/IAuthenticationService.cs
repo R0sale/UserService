@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Entities.Models;
+using Microsoft.AspNetCore.Identity;
 using Shared.DTOObjects;
 using System;
 using System.Collections.Generic;
@@ -13,5 +14,7 @@ namespace Contracts
         Task<IdentityResult> RegisterUser(UserForRegistrationDTO userForRegistration);
         Task<bool> ValidateUser(UserForAuthenticationDTO userForAuth);
         Task<string> CreateToken();
+        Task<IdentityResult> ConfirmEmailAsync(User user, string code);
+        Task<User> GetUserToConfirmEmail(Guid id);
     }
 }

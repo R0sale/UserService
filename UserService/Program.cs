@@ -18,6 +18,8 @@ builder.Services.ConfigureValidationFilter();
 builder.Services.AddControllers()
     .AddNewtonsoftJson();
 
+builder.Services.ConfigureEmailService();
+
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.SuppressModelStateInvalidFilter = true;

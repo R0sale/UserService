@@ -1,4 +1,5 @@
 ﻿using Contracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shared.DTOObjects;
 using UserService.ActionFilters;
@@ -29,7 +30,7 @@ namespace UserService.Controllers
                 return BadRequest();
             }
 
-            return StatusCode(201);
+            return Content("To end registration check your email and follow the link.");
         }
 
         [HttpPost("login")]
@@ -44,5 +45,27 @@ namespace UserService.Controllers
             });
         }
 
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        {
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
+                return BadRequest();
+
+            if (!Guid.TryParse(userId, out var id))
+                return BadRequest("Id isn't in appropriate format");
+
+            var user = await _service.AuthenticationService.GetUserToConfirmEmail(id);
+
+            if (user == null)
+                return NotFound("User not found.");
+
+            var result = await _service.AuthenticationService.ConfirmEmailAsync(user, code);
+
+            if (result.Succeeded)
+                return Ok("Email confirmed.");
+            else
+                return Content("Couldn't confirm email.");
+        }
     }
 }
