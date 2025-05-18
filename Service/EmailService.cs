@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using MimeKit;
 using MailKit.Net.Smtp;
+using Entities.Models;
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace Service
 {
@@ -23,13 +25,24 @@ namespace Service
             _httpContextAcc = httpContextAcc;
         }
 
-        public string GenerateLink(string userId, string code)
+        public string GenerateEmailLink(string userId, string code)
         {
             var callBackUri = _linkGenerator.GetUriByAction(
                 httpContext: _httpContextAcc.HttpContext,
                 action: "ConfirmEmail",
                 controller: "Authentication",
                 values: new { userId, code });
+
+            return callBackUri;
+        }
+
+        public string GenerateRestoreLink(string userId, string code, string newPassword)
+        {
+            var callBackUri = _linkGenerator.GetUriByAction(
+                httpContext: _httpContextAcc.HttpContext,
+                action: "ChangePassword",
+                controller: "Authentication",
+                values: new { userId, code, newPassword });
 
             return callBackUri;
         }

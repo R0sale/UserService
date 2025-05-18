@@ -13,6 +13,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using MailKit;
+using Entities.Exceptions;
 
 namespace Service
 {
@@ -55,7 +56,7 @@ namespace Service
 
                 var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
-                var callBackUri = _emailService.GenerateLink(user.Id, code);
+                var callBackUri = _emailService.GenerateEmailLink(user.Id, code);
 
                 await _emailService.SendEmailAsync(user.Email, "Confirm your email", $"To confirm your email follow the link <a href=\"{callBackUri}\">link</a>");
             }
@@ -81,16 +82,57 @@ namespace Service
             return new JwtSecurityTokenHandler().WriteToken(tokenOptions);
         }
 
-        public async Task<IdentityResult> ConfirmEmailAsync(User user, string code)
+        public async Task<IdentityResult> ConfirmEmailAsync(string userId, string code)
         {
-            return await _userManager.ConfirmEmailAsync(user, code);
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
+                throw new NullParameterException("userId or code");
+
+            if (!Guid.TryParse(userId, out var id))
+                throw new NotApproproateParam("Id isn't in appropriate format");
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+                throw new UserNotFoundException();
+
+            var result = await _userManager.ConfirmEmailAsync(user, code);
+
+            return result;
         }
 
-        public async Task<User> GetUserToConfirmEmail(Guid id)
+        public async Task RestorePassword(RestorePasswordUserDTO restoreUser)
         {
-            var user = await _userManager.FindByIdAsync(id.ToString());
+            var user = await _userManager.FindByEmailAsync(restoreUser.Email);
 
-            return user;
+            if (user == null)
+                throw new UserNotFoundException();
+
+            if (!await _userManager.IsEmailConfirmedAsync(user))
+                throw new NotConfirmedUserException(user.Email);
+
+            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            var callBackUri = _emailService.GenerateRestoreLink(user.Id, code, restoreUser.NewPassword);
+
+            await _emailService.SendEmailAsync(user.Email, "Restore password", $"To change your password follow this link <a href=\"{callBackUri}\">link</a>");
+        }
+
+        public async Task<IdentityResult> ConfirmPasswordAsync(string userId, string code, string newPassword)
+        {
+            if (string.IsNullOrEmpty(userId))
+                throw new NullParameterException("userId");
+
+            if (string.IsNullOrEmpty(code))
+                throw new NullParameterException("code");
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+                throw new UserNotFoundException();
+
+            var result = await _userManager.ResetPasswordAsync(user, code, newPassword);
+
+            return result;
         }
 
         private SigningCredentials GetSigningCredentials()
