@@ -64,13 +64,26 @@ namespace Service
             return result;
         }
 
-        public async Task<bool> ValidateUser(UserForAuthenticationDTO userForAuth)
+        public async Task ValidateUser(UserForAuthenticationDTO userForAuth)
         {
             _user = await _userManager.FindByNameAsync(userForAuth.UserName);
 
-            var result = (_user != null && await _userManager.CheckPasswordAsync(_user, userForAuth.Password));
+            if (_user == null)
+                throw new UserNotFoundException();
 
-            return result;
+            if (!await _userManager.CheckPasswordAsync(_user, userForAuth.Password))
+                throw new InvalidUserNameOrPasswordException(_user.UserName);
+
+            if (!await _userManager.IsEmailConfirmedAsync(_user))
+            {
+                var code = await _userManager.GenerateEmailConfirmationTokenAsync(_user);
+
+                var callBackUri = _emailService.GenerateEmailLink(_user.Id, code);
+
+                await _emailService.SendEmailAsync(_user.Email, "Confirm your email", $"To confirm your email follow the link <a href=\"{callBackUri}\">link</a>");
+
+                throw new NotConfirmedEmailException($"Your email is not confirmed, check your email {_user.Email} and follow the link");
+            }
         }
 
         public async Task<string> CreateToken()
@@ -108,7 +121,7 @@ namespace Service
                 throw new UserNotFoundException();
 
             if (!await _userManager.IsEmailConfirmedAsync(user))
-                throw new NotConfirmedUserException(user.Email);
+                throw new NotConfirmedEmailException($"Your email {user.Email} is not confirmed");
 
             var code = await _userManager.GeneratePasswordResetTokenAsync(user);
 

@@ -15,6 +15,7 @@ namespace Contracts
         Task DeleteUser(User user);
         Task UpdateUser(User user, UserForUpdateDTO userForUpd);
         Task<IEnumerable<string>> GetRoles(User user);
-        public Task PartiallyUpdateUser(User user, UserForUpdateDTO userForUpd);
+        Task PartiallyUpdateUser(User user, UserForUpdateDTO userForUpd);
+        Task<User> GetUserByEmail(string userName);
     }
 }

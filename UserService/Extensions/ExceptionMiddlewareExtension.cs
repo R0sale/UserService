@@ -17,8 +17,9 @@ namespace UserService.Extensions
 
                     if (contextFeature != null)
                     {
-                        context.Response.StatusCode = contextFeature switch
+                        context.Response.StatusCode = contextFeature.Error switch
                         {
+                            UnauthorizedException => StatusCodes.Status401Unauthorized,
                             BadRequestException => StatusCodes.Status400BadRequest,
                             ForbiddenException => StatusCodes.Status403Forbidden,
                             NotFoundException => StatusCodes.Status404NotFound,

@@ -12,7 +12,7 @@ namespace Contracts
     public interface IAuthenticationService
     {
         Task<IdentityResult> RegisterUser(UserForRegistrationDTO userForRegistration);
-        Task<bool> ValidateUser(UserForAuthenticationDTO userForAuth);
+        Task ValidateUser(UserForAuthenticationDTO userForAuth);
         Task<string> CreateToken();
         Task<IdentityResult> ConfirmEmailAsync(string userId, string code);
         Task RestorePassword(RestorePasswordUserDTO restoreUser);

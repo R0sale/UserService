@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Entities.Exceptions
 {
-    public class NotConfirmedUserException : ForbiddenException
+    public class UnauthorizedException : Exception
     {
-        public NotConfirmedUserException(string email) : base($"User has not confirmed email {email}")
+        public UnauthorizedException(string message) : base(message)
         { }
     }
 }

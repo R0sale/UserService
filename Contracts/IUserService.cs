@@ -16,5 +16,6 @@ namespace Contracts
         Task UpdateUser(Guid id, UserForUpdateDTO userForUpd);
         Task<(UserForUpdateDTO userForUpd, User userEntity)> GetUserForPatialUpdate(Guid id);
         Task PartiallyUpdateUser(User user, UserForUpdateDTO userForUpd);
+        Task<UserDTO> GetUserByEmailAsync(string email);
     }
 }
