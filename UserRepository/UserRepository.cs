@@ -29,6 +29,13 @@ namespace UserRepository
             return users;
         }
 
+        public async Task<User> GetUserByEmail(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+
+            return user;
+        }
+
         public async Task<IEnumerable<string>> GetRoles(User user)
         {
             return await _userManager.GetRolesAsync(user);

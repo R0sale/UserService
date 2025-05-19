@@ -3,6 +3,7 @@ using Shared.DTOObjects;
 using Shared.Request;
 using AutoMapper;
 using Entities.Models;
+using Entities.Exceptions;
 
 namespace Service
 {
@@ -73,9 +74,21 @@ namespace Service
             await _repository.PartiallyUpdateUser(user, userForUpd);
         }
 
+        public async Task<UserDTO> GetUserByEmailAsync(string email)
+        {
+            var user = await _repository.GetUserByEmail(email);
+
+            var userDTO = _mapper.Map<UserDTO>(user);
+
+            return userDTO;
+        }
+
         private async Task<User> FindAndCheckIfExistsUser(Guid id)
         {
             var user = await _repository.GetUser(id);
+
+            if (user == null)
+                throw new UserNotFoundException();
 
             return user;
         }

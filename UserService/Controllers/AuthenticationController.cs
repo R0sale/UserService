@@ -30,15 +30,18 @@ namespace UserService.Controllers
                 return BadRequest();
             }
 
-            return Content("To end registration check your email and follow the link.");
+            var user = await _service.UserService.GetUserByEmailAsync(userForRegistration.Email);
+
+            return CreatedAtRoute(routeName: "UserById",
+                                  routeValues: new { id = user.Id },
+                                  value: new { message = "To end registration check your email and follow the link." });
         }
 
         [HttpPost("login")]
         [ServiceFilter(typeof(ValidationFilter))]
         public async Task<IActionResult> Authenticate([FromBody] UserForAuthenticationDTO userForAuth)
         {
-            if (!await _service.AuthenticationService.ValidateUser(userForAuth))
-                return Unauthorized();
+            await _service.AuthenticationService.ValidateUser(userForAuth);
 
             return Ok(new TokenResponse
             {

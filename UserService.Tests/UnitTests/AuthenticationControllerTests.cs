@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UserService.Controllers;
 using Xunit;
+using Entities.Exceptions;
 
 namespace UserService.Tests.UnitTests
 {
@@ -24,18 +25,27 @@ namespace UserService.Tests.UnitTests
                 Password = "Secure123!",
             };
 
+            var user = new UserDTO
+            {
+                Id = Guid.NewGuid(),
+                Email = "test@mail.com",
+                FirstName = "Dada"
+            };
+
             var identityResult = IdentityResult.Success;
 
             var mockService = new Mock<IServiceManager>();
             mockService.Setup(x => x.AuthenticationService.RegisterUser(userForRegistration))
                 .ReturnsAsync(identityResult);
 
+            mockService.Setup(x => x.UserService.GetUserByEmailAsync(userForRegistration.Email))
+                .ReturnsAsync(user);
+
             var controller = new AuthenticationController(mockService.Object);
 
             var result = await controller.RegisterUser(userForRegistration);
 
-            var statusResult = Assert.IsType<StatusCodeResult>(result);
-            Assert.Equal(201, statusResult.StatusCode);
+            var statusResult = Assert.IsType<CreatedAtRouteResult>(result);
         }
 
         [Fact]
@@ -75,7 +85,7 @@ namespace UserService.Tests.UnitTests
 
             var mockService = new Mock<IServiceManager>();
             mockService.Setup(x => x.AuthenticationService.ValidateUser(userForAuth))
-                .ReturnsAsync(true);
+                .Returns(Task.CompletedTask);
 
             mockService.Setup(x => x.AuthenticationService.CreateToken())
                 .ReturnsAsync("mocked-jwt-token");
@@ -90,7 +100,7 @@ namespace UserService.Tests.UnitTests
         }
 
         [Fact]
-        public async Task Authenticate_ReturnsUnauthorized_WhenCredentialsAreInvalid()
+        public async Task Authenticate_ThrowsUnauthorizedException_WhenCredentialsAreInvalid()
         {
             var userForAuth = new UserForAuthenticationDTO
             {
@@ -100,13 +110,11 @@ namespace UserService.Tests.UnitTests
 
             var mockService = new Mock<IServiceManager>();
             mockService.Setup(x => x.AuthenticationService.ValidateUser(userForAuth))
-                .ReturnsAsync(false);
+                .Throws(new InvalidUserNameOrPasswordException("userName"));
 
             var controller = new AuthenticationController(mockService.Object);
 
-            var result = await controller.Authenticate(userForAuth);
-
-            Assert.IsType<UnauthorizedResult>(result);
+            await Assert.ThrowsAsync<InvalidUserNameOrPasswordException>(() => controller.Authenticate(userForAuth));
         }
 
     }
